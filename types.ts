@@ -13,8 +13,8 @@ export interface Term{
   }
   
   export interface Data{
-    terms: Term[]
-    rules: Rule[]
+    terms: Term[]   // f, g, h
+    rules: Rule[]   //
   }
   
   export interface Operation{

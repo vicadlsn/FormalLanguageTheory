@@ -66,14 +66,9 @@ export function composeFunction(function1: Operation, function2: Operation): Ope
 export function unwrapComposition(composition: Composition): Operation {
   const left = createOrdinalFunction(composition.left.label)
   const right = 'label' in composition.right ? createOrdinalFunction(composition.right.label) : unwrapComposition(composition.right)
-  return composeFunction(left, right)
+  return pretifyComposition(composeFunction(left, right))
 }
 
-// a * b * c * (d + e + f) * g
-// ((a * b * c * d + a * b * c * e + a * b * c * f)) * g
-
-// a * b * c * (d + e + f)
-// (a * b * c * d + a * b * c * e + a * b * c * f)
 export function leftDistributing(composition: Operation): boolean {
   const stack: Operation[] = []
   stack.push(composition)
@@ -90,20 +85,20 @@ export function leftDistributing(composition: Operation): boolean {
           arguments: []
         } as Operation
         operation.operation = '+'
-        const sum = current.arguments[sumIdx] as Operation
+        const sum = JSON.parse(JSON.stringify(current.arguments[sumIdx])) as Operation
         operation.arguments = sum.arguments.map(e => {
           if (typeof (e) == 'object' && e.operation == '*')
             return {
               operation: '*',
-              arguments: [...beforeSum, ...e.arguments]
+              arguments: [...JSON.parse(JSON.stringify(beforeSum)) as (string | Operation)[], ...e.arguments]
             } as Operation
           return {
             operation: '*',
-            arguments: [...beforeSum, e]
+            arguments: [...JSON.parse(JSON.stringify(beforeSum)) as (string | Operation)[], e]
           } as Operation
         })
         if (afterSum.length) {
-          current.arguments = [operation, ...afterSum]
+          current.arguments = [operation, ...JSON.parse(JSON.stringify(afterSum)) as (string | Operation)[]]
         } else {
           current.operation = operation.operation
           current.arguments = operation.arguments
@@ -126,16 +121,18 @@ export function removeOrdinals(composition: Operation) {
   while (stack.length) {
     const current = stack.pop()
     if (!current) continue
-    let newArgs = current.arguments.filter((v, i, self) =>
+    let newArgs = (JSON.parse(JSON.stringify(current)) as Operation).arguments.filter((v, i, self) =>
       !(i < self.length - 1 &&
-        typeof (v) == 'string' && !W_REGEX.test(v) &&
-        typeof (self[i + 1]) == 'string' && W_REGEX.test(self[i + 1] as string)))
+        (typeof (v) == 'string' && !W_REGEX.test(v)) &&
+        ((typeof (self[i + 1]) == 'string' && W_REGEX.test(self[i + 1] as string)) ||
+          ((self[i + 1] as Operation).operation == '*' && !!(self[i + 1] as Operation).arguments.find(e => typeof (e) == 'string' && W_REGEX.test(e))))))
     while (current.arguments.length != newArgs.length) {
       current.arguments = newArgs
-      newArgs = current.arguments.filter((v, i, self) =>
+      newArgs = (JSON.parse(JSON.stringify(current)) as Operation).arguments.filter((v, i, self) =>
         !(i < self.length - 1 &&
-          typeof (v) == 'string' && !W_REGEX.test(v) &&
-          typeof (self[i + 1]) == 'string' && W_REGEX.test(self[i + 1] as string)))
+          (typeof (v) == 'string' && !W_REGEX.test(v)) &&
+          ((typeof (self[i + 1]) == 'string' && W_REGEX.test(self[i + 1] as string)) ||
+            ((self[i + 1] as Operation).operation == '*' && !!(self[i + 1] as Operation).arguments.find(e => typeof (e) == 'string' && W_REGEX.test(e))))))
     }
 
     current.arguments.forEach(e => {
@@ -178,9 +175,6 @@ export function restructureComposition(composition: Operation) {
   }
 }
 
-// (w + a + b) * c * d
-// (w + a) * c * d + b
-
 export function rightDistributing(composition: Operation): boolean {
   const stack: Operation[] = []
   stack.push(composition)
@@ -190,11 +184,14 @@ export function rightDistributing(composition: Operation): boolean {
 
     if (current.operation == '*') {
       const sumArg = current.arguments[0]
-      if (typeof (sumArg) == 'object' && sumArg.operation == '+' &&
-        (typeof (sumArg.arguments[0]) == 'string' && W_REGEX.test(sumArg.arguments[0]) ||
-          (sumArg.arguments[0] as Operation).operation == '*' && !!(sumArg.arguments[0] as Operation).arguments.find(e => typeof (e) == 'string' && W_REGEX.test(e))) &&
-        typeof (sumArg.arguments[sumArg.arguments.length - 1]) == 'string' && !W_REGEX.test(sumArg.arguments[sumArg.arguments.length - 1] as string)) {
-
+      if (
+        (typeof (sumArg) == 'object' && sumArg.operation == '+') &&
+        ((typeof (sumArg.arguments[0]) == 'string' && W_REGEX.test(sumArg.arguments[0])) ||
+          ((sumArg.arguments[0] as Operation).operation == '*' && !!(sumArg.arguments[0] as Operation).arguments.find(e => typeof (e) == 'string' && W_REGEX.test(e)))) &&
+        typeof (sumArg.arguments[sumArg.arguments.length - 1]) == 'string' && sumArg.arguments[sumArg.arguments.length - 1] != 'x' && !W_REGEX.test(sumArg.arguments[sumArg.arguments.length - 1] as string) &&
+        current.arguments[1] != 'x'
+      ) {
+        // console.log(JSON.stringify(current, null, 4))
         const lastCoeff = sumArg.arguments[sumArg.arguments.length - 1]
         sumArg.arguments = sumArg.arguments.slice(0, sumArg.arguments.length - 1)
         const operation = JSON.parse(JSON.stringify(current))
@@ -206,6 +203,7 @@ export function rightDistributing(composition: Operation): boolean {
         return true
       }
     }
+
     current.arguments.forEach(e => {
       if (typeof (e) == 'object') {
         stack.push(e)
@@ -220,41 +218,30 @@ export function writeOperation(operation: Operation): string {
 }
 
 export function pretifyComposition(composition: Operation): Operation {
-  console.log('begin    ', writeOperation(composition))
   let done = true
   while (done) {
     done = false
+
     let step_done = leftDistributing(composition)
+
     done = done || step_done
     while (step_done) {
       step_done = leftDistributing(composition)
     }
 
-    console.log('left     ', writeOperation(composition))
-
+    restructureComposition(composition)
     removeOrdinals(composition)
 
-    console.log('ordinals ', writeOperation(composition))
-
-    restructureComposition(composition)
-
-    console.log('restruct ', writeOperation(composition))
-
     step_done = rightDistributing(composition)
+
     done = done || step_done
     while (step_done) {
       step_done = rightDistributing(composition)
     }
 
-    console.log('right    ', writeOperation(composition))
-
-    removeOrdinals(composition)
-
-    console.log('ordinals ', writeOperation(composition))
-
     restructureComposition(composition)
-
-    console.log('restruct ', writeOperation(composition))
+    removeOrdinals(composition)
   }
+
   return composition
 }
