@@ -1,6 +1,5 @@
 import { Composition, Operation } from "./types"
-
-const W_REGEX = /^w(\^\d)?/
+import { W_REGEX } from "./utils"
 
 export function createOrdinalFunction(label: string): Operation {
   return {
@@ -213,35 +212,15 @@ export function rightDistributing(composition: Operation): boolean {
   return false
 }
 
-export function writeOperation(operation: Operation): string {
-  return `(${operation.arguments.map(e => typeof (e) == 'string' ? e : writeOperation(e)).join(` ${operation.operation} `)})`
-}
-
 export function pretifyComposition(composition: Operation): Operation {
   let done = true
-  while (done) {
-    done = false
-
-    let step_done = leftDistributing(composition)
-
-    done = done || step_done
-    while (step_done) {
-      step_done = leftDistributing(composition)
-    }
-
-    restructureComposition(composition)
-    removeOrdinals(composition)
-
-    step_done = rightDistributing(composition)
-
-    done = done || step_done
-    while (step_done) {
-      step_done = rightDistributing(composition)
-    }
-
+  while (leftDistributing(composition) || rightDistributing(composition)) {
     restructureComposition(composition)
     removeOrdinals(composition)
   }
+  restructureComposition(composition)
+  removeOrdinals(composition)
+
 
   return composition
 }

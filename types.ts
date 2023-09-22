@@ -21,5 +21,3 @@ export interface Term{
     operation: string
     arguments: (string | Operation) []
   }
-  
-  
