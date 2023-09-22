@@ -6,7 +6,7 @@ import { writeOperation } from "./utils";
 import * as fs from 'fs';
 import * as childProcess from 'child_process'
 
-const z3Path = 'C:/z3/binz3'
+const z3Path = 'C:/z3/bin/z3'
 const inputPath = 'input'
 const smtPath = 'smt.smt'
 const outPath = 'out.txt'
