@@ -6,7 +6,7 @@ import { writeOperation } from "./utils";
 import * as fs from 'fs';
 import * as childProcess from 'child_process'
 
-const z3Path = 'C:/z3/bin/z3'
+const z3Path = 'z3'
 const inputPath = 'input'
 const smtPath = 'smt.smt'
 const outPath = 'out.txt'
@@ -27,11 +27,12 @@ function createSMTFile(path: string, data: Data){
 }
 
 function checkSat(){
-  childProcess.exec(`${z3Path} ${smtPath}`, function(err, data, err_data) {  
+  const cmd = `${z3Path} ${smtPath}`
+  childProcess.exec(cmd, function(err, data, err_data) {  
     if(err){
       console.log(err_data.toString())
     }
-    
+    console.log(data.toString())                     
     fs.writeFileSync(outPath, data.toString())                     
   })
 }

@@ -198,7 +198,7 @@ export function compareOrdinals(ordinal1: Operation | string, ordinal2: Operatio
           result.arguments.push(degOperation)
         } else {
           const equalsOperations = Array.from(Array(coeffs1.length - 1 - i).keys()).map(e => ({
-            operation: '>',
+            operation: '=',
             arguments: [
               coeffs1[e + i + 1],
               coeffs2[e + i + 1]
