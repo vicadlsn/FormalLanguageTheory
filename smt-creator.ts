@@ -242,12 +242,19 @@ export function defineVars(terms: Term[]): string{
 }
 
 export function restrictVars(terms: Term[]): string{
-  return terms.map(e => [
-    `(assert (> a_1${e.label} 0))`,
-    `(assert (> a_2${e.label} 0))`,
-    `(assert (> b_1${e.label} 0))`,
-    `(assert (> b_2${e.label} 0))`
-  ]).flat(1).join('\n\n')
+  const cond1 =  terms.map(e => [
+    `(> a_1${e.label} 0)`,
+    `(> a_2${e.label} 0)`,
+    `(> b_1${e.label} 0)`,
+    `(> b_2${e.label} 0)`
+  ]).flat(1).join(' ')
+  const cond2 =  terms.map(e => [
+    `(>= a_1${e.label} 0)`,
+    `(>= a_2${e.label} 0)`,
+    `(>= b_1${e.label} 0)`,
+    `(>= b_2${e.label} 0)`
+  ]).flat(1).join(' ')
+  return `(assert (and (or ${cond1}) (and ${cond2})))`
 }
 
 export function createSMTRule(function1: Operation, function2: Operation){
