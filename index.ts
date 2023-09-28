@@ -5,14 +5,12 @@ import { Composition, Data, Operation, Rule, Term } from "./types";
 import { writeOperation } from "./utils";
 import * as fs from 'fs';
 import * as childProcess from 'child_process'
+import config from "./config";
 
-const z3Path = 'z3'
-const inputPath = 'input'
-const smtPath = 'smt.smt'
-const outPath = 'out.txt'
-const data = parseInput(inputPath)
-createSMTFile(smtPath, data)
-checkSat()
+
+const data = parseInput(config.inputPath)
+createSMTFile(config.smtPath, data)
+checkSat(config.z3Path, config.smtPath, config.outPath)
 
 function createSMTFile(path: string, data: Data){
   const termsSMT = defineVars(data.terms)
@@ -26,7 +24,7 @@ function createSMTFile(path: string, data: Data){
   fs.writeFileSync(path, result)
 }
 
-function checkSat(){
+function checkSat(z3Path: string, smtPath: string, outPath: string ){
   const cmd = `${z3Path} ${smtPath}`
   childProcess.exec(cmd, function(err, data, err_data) {  
     if(err){
