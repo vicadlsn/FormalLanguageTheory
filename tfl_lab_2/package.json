@@ -1,12 +1,11 @@
 {
-  "name": "tfl_lab1",
+  "name": "tfl_lab_2",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node --loader ts-node/esm index.ts"
-
   },
   "author": "",
   "license": "ISC",
