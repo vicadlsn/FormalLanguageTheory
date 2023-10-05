@@ -52,9 +52,9 @@ export interface Tree{
 }
 
 export interface Automata{
-  statesCount: number,
-  final: number,
+  states: number,
+  final: number[],
   init: number
   alphabet: string[]
-  map: number[][]
+  map: ({[term: string]: number[]})[]
 }
