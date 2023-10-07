@@ -1,4 +1,4 @@
-import { Lexem, LexemType } from "./types"
+import { Lexem, LexemType, ParsingError } from "./types"
 
 const SYMBOL_REGEX = /^[a-zA-Z0-9]$/
 const LOOKAHEAD_REGEX = /^\?=/
@@ -53,7 +53,7 @@ export class LexicalAnalyzer{
         case '|': result.push({type: LexemType.OR, value: ''}); break;
         case '^': result.push({type: LexemType.LINE_START, value: ''}); break;
         case '$': result.push({type: LexemType.LINE_END, value: ''}); break;
-        default: throw Error(`UNKNOWN SYMBOL: "${current}"!${current == '?' ? ' Did you mean "?="?': ''}`)
+        default: throw new ParsingError(`UNKNOWN SYMBOL: "${current}"!${current == '?' ? ' Did you mean "?="?': ''}`)
       }
     }
     return result

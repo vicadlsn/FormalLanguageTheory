@@ -1,0 +1,235 @@
+LEXEMS(): 
+[
+  {
+    "type": "LINE_START",
+    "value": ""
+  },
+  {
+    "type": "OPEN_BRACKET",
+    "value": ""
+  },
+  {
+    "type": "OPEN_BRACKET",
+    "value": ""
+  },
+  {
+    "type": "SYMBOL",
+    "value": "b"
+  },
+  {
+    "type": "ITERATION",
+    "value": ""
+  },
+  {
+    "type": "OR",
+    "value": ""
+  },
+  {
+    "type": "OPEN_BRACKET",
+    "value": ""
+  },
+  {
+    "type": "OPEN_BRACKET",
+    "value": ""
+  },
+  {
+    "type": "SYMBOL",
+    "value": "a"
+  },
+  {
+    "type": "ITERATION",
+    "value": ""
+  },
+  {
+    "type": "CLOSE_BRACKET",
+    "value": ""
+  },
+  {
+    "type": "ITERATION",
+    "value": ""
+  },
+  {
+    "type": "OR",
+    "value": ""
+  },
+  {
+    "type": "SYMBOL",
+    "value": "a"
+  },
+  {
+    "type": "ITERATION",
+    "value": ""
+  },
+  {
+    "type": "CLOSE_BRACKET",
+    "value": ""
+  },
+  {
+    "type": "CLOSE_BRACKET",
+    "value": ""
+  },
+  {
+    "type": "OPEN_BRACKET",
+    "value": ""
+  },
+  {
+    "type": "SYMBOL",
+    "value": "a"
+  },
+  {
+    "type": "ITERATION",
+    "value": ""
+  },
+  {
+    "type": "CLOSE_BRACKET",
+    "value": ""
+  },
+  {
+    "type": "ITERATION",
+    "value": ""
+  },
+  {
+    "type": "CLOSE_BRACKET",
+    "value": ""
+  },
+  {
+    "type": "OPEN_BRACKET",
+    "value": ""
+  },
+  {
+    "type": "LOOKAHEAD_BEGIN",
+    "value": ""
+  },
+  {
+    "type": "SYMBOL",
+    "value": "a"
+  },
+  {
+    "type": "ITERATION",
+    "value": ""
+  },
+  {
+    "type": "CLOSE_BRACKET",
+    "value": ""
+  },
+  {
+    "type": "LINE_END",
+    "value": ""
+  }
+]
+
+TREE(): 
+{
+  "type": "CONCAT",
+  "value": "",
+  "children": [
+    {
+      "type": "CONCAT",
+      "value": "",
+      "children": [
+        {
+          "type": "OR",
+          "value": "",
+          "children": [
+            {
+              "type": "ITERATION",
+              "value": "",
+              "children": [
+                {
+                  "type": "SYMBOL",
+                  "value": "b",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "type": "ITERATION",
+              "value": "",
+              "children": [
+                {
+                  "type": "ITERATION",
+                  "value": "",
+                  "children": [
+                    {
+                      "type": "SYMBOL",
+                      "value": "a",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "ITERATION",
+              "value": "",
+              "children": [
+                {
+                  "type": "SYMBOL",
+                  "value": "a",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "ITERATION",
+          "value": "",
+          "children": [
+            {
+              "type": "ITERATION",
+              "value": "",
+              "children": [
+                {
+                  "type": "SYMBOL",
+                  "value": "a",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "LOOKAHEAD",
+      "value": "",
+      "children": [
+        {
+          "type": "ITERATION",
+          "value": "",
+          "children": [
+            {
+              "type": "SYMBOL",
+              "value": "a",
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+AUTOMATA(regexAutomata): 
+STATES: 0 1
+INIT: 0
+FINAL: 0 1
+ALPHABET: b a
+TABLE: 
+\ | b | a
+-----------------
+0 | 0 | 1
+1 |   | 1
+
+AUTOMATA(minimized): 
+STATES: 0 1
+INIT: 0
+FINAL: 0 1
+ALPHABET: b a
+TABLE: 
+\ | b | a
+-----------------
+0 | 0 | 1
+1 |   | 1
+

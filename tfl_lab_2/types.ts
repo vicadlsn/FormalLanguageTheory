@@ -31,8 +31,7 @@ export enum TreeType{
   OR,
   ITERATION,
   LOOKAHEAD,
-  GROUP,
-  EMPTY
+  EMPTY,
 }
 
 export const TreeTypeDict = [
@@ -41,8 +40,7 @@ export const TreeTypeDict = [
   'OR',
   'ITERATION',
   'LOOKAHEAD',
-  'GROUP',
-  'EMPTY'
+  'EMPTY',
 ]
 
 export interface Tree{
@@ -57,4 +55,11 @@ export interface Automata{
   init: number
   alphabet: string[]
   map: ({[term: string]: number[]})[]
+}
+
+export class ParsingError extends Error{
+  constructor(msg: string){
+    super(msg)
+    Object.setPrototypeOf(this, ParsingError.prototype)
+  }
 }

@@ -1,4 +1,4 @@
-import { Lexem, LexemType, LexemTypeDict, Tree, TreeType } from "./types"
+import { Lexem, LexemType, LexemTypeDict, ParsingError, Tree, TreeType } from "./types"
 
 const SYMBOL_REGEX = /^[a-zA-Z0-9]$/
 const LOOKAHEAD_REGEX = /^\?=/
@@ -54,16 +54,14 @@ export class SyntaxAnalyzer{
   }
 
   private parseInit(): Tree{
-    console.log('Init')
-    if(this.current()?.type != LexemType.LINE_START) throw Error(`SYNTAX ERROR: EXPECTED "^" BUT FOUND "${this.lexemToString(this.current())}"`)
+    if(this.current()?.type != LexemType.LINE_START) throw new ParsingError(`SYNTAX ERROR: EXPECTED "^" BUT FOUND "${this.lexemToString(this.current())}"`)
     this.next()
     const first = this.parseRegex()
-    if(this.current()?.type != LexemType.LINE_END) throw Error(`SYNTAX ERROR: EXPECTED "$" BUT FOUND "${this.lexemToString(this.current())}"`)
+    if(this.current()?.type != LexemType.LINE_END) throw new ParsingError(`SYNTAX ERROR: EXPECTED "$" BUT FOUND "${this.lexemToString(this.current())}"`)
     return first
   }
 
   private parseRegex(): Tree{
-    console.log('Regex')
     const first = this.parseConcat()
     if(this.current()?.type == LexemType.OR){
       this.next()
@@ -78,7 +76,6 @@ export class SyntaxAnalyzer{
   }
 
   private parseConcat(): Tree{
-    console.log('Concat')
     const first = this.parseIter()
     if(this.current()?.type == LexemType.OPEN_BRACKET || this.current()?.type == LexemType.SYMBOL){
       const next = this.parseConcat()
@@ -92,7 +89,6 @@ export class SyntaxAnalyzer{
   }
 
   private parseIter(): Tree{
-    console.log('Iter')
     const first = this.parseGroup()
     if(this.current()?.type == LexemType.ITERATION){
       this.next()
@@ -106,7 +102,6 @@ export class SyntaxAnalyzer{
   }
 
   private parseGroup(): Tree{
-    console.log('Group')
     if(this.current()?.type == LexemType.SYMBOL){
       const symbol = this.current()!.value
       this.next()
@@ -118,24 +113,23 @@ export class SyntaxAnalyzer{
     }
     if(this.current()?.type == LexemType.OPEN_BRACKET){
       this.next()
-      if(!this.current()) throw Error('UNEXCPECTED END')
+      if(!this.current()) throw new ParsingError('UNEXCPECTED END')
       if(this.current()!.type == LexemType.LOOKAHEAD_BEGIN){
         this.next()
         const lookahead = this.parseLookahead()
-        if(this.current()?.type != LexemType.CLOSE_BRACKET) throw Error('UNEXCPECTED END')
+        if(this.current()?.type != LexemType.CLOSE_BRACKET) throw new ParsingError('UNEXCPECTED END')
         this.next()
         return lookahead
       }
       const regex = this.parseRegex()
-      if(this.current()?.type != LexemType.CLOSE_BRACKET) throw Error('UNEXCPECTED END')
+      if(this.current()?.type != LexemType.CLOSE_BRACKET) throw new ParsingError('UNEXCPECTED END')
       this.next()
       return regex
     }
-    throw Error(`SYNTAX ERROR: EXPECTED "(" OR SYMBOL BUT FOUND "${this.lexemToString(this.current())}"`)
+    throw new ParsingError(`SYNTAX ERROR: EXPECTED "(" OR SYMBOL BUT FOUND "${this.lexemToString(this.current())}"`)
   }
 
   private parseLookahead(): Tree{
-    console.log('Lookahead')
     const first = this.parseRegex()
     const ending = this.current()?.type == LexemType.LINE_END
     if(ending) this.next()
