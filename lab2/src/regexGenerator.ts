@@ -22,6 +22,8 @@ export class RegexGenerator {
     private currentSequenceNesting: number;
     private maxSequenceNesting: number = 1;
 
+    private firstIteration: boolean;
+
     constructor(
         private readonly alphabetSize: number = 5,
         private readonly maxStarHeight: number = 2,
@@ -37,6 +39,7 @@ export class RegexGenerator {
         this.lookaheadsLeft = this.maxLookaheadsNumber;
         this.lettersUsed = 0;
         this.currentSequenceNesting = 0;
+        this.firstIteration = true;
     }
 
 
@@ -44,6 +47,7 @@ export class RegexGenerator {
         this.lookaheadsLeft = this.maxLookaheadsNumber;
         this.lettersUsed = 0;
         this.currentSequenceNesting = 0;
+        this.firstIteration = true;
     }
 
 
@@ -66,7 +70,8 @@ export class RegexGenerator {
             followedByConcatenation: false
         });
 
-        while (/*this.lookaheadsLeft > 0 ||*/ this.lettersUsed < this.maxLettersNumber) {
+        this.firstIteration = false;
+        while ( this.lettersUsed < this.maxLettersNumber) {
             res += '|' + this.expandRegex({
                 lettersLeft: this.maxLettersNumber - this.lettersUsed,
                 iterationsLeft: this.maxStarHeight,
@@ -90,6 +95,8 @@ export class RegexGenerator {
         if (options.lettersLeft < 2 || getRandom(0, 2)) {
             return this.expandConcatenation(next);
         }
+
+        this.firstIteration = false;
 
         this.currentSequenceNesting = 0;
         next.noLookaheads = options.followedByConcatenation ? true : options.noLookaheads;
@@ -115,6 +122,8 @@ export class RegexGenerator {
             return this.expandIteration(next);
         }
 
+        this.firstIteration = false;
+
         this.currentSequenceNesting = 0;
         next.lettersLeft--;
         next.followedByConcatenation = true;
@@ -136,7 +145,7 @@ export class RegexGenerator {
             startRule = 0;
         }
 
-        if (this.lookaheadsLeft > 0 && options.noLookaheads == false) {
+        if (this.lookaheadsLeft > 0 && !options.noLookaheads && !this.firstIteration) {
             endRule = 3;
         }
 
