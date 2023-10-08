@@ -78,7 +78,7 @@ export function getPaths(automata: Automata): string[] {
     return paths;
 }
 
-const minSequenceLength = 5;
+const minSequenceLength = 10;
 
 function getStatesSequence(automata: Automata): number[] {
     let state: number = automata.init;
@@ -93,8 +93,8 @@ function getStatesSequence(automata: Automata): number[] {
         path.push(state);
 
         iteration++
-    } //while (iteration < minSequenceLength || (iteration > minSequenceLength && automata.final.indexOf(state) == -1));
-    while (automata.final.indexOf(state) == -1);
+    } while (iteration < minSequenceLength || (iteration > minSequenceLength && automata.final.indexOf(state) == -1));
+    //while (automata.final.indexOf(state) == -1);
 
     return path;
 }

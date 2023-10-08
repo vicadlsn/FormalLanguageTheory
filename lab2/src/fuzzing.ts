@@ -6,20 +6,25 @@ export function fuzzStringFromFragments(fragments: string[]): string {
     return res.join('');
 }
 
-const deleteSymbol = (fragments: string[]): void => {
-    let fragment: number = getRandom(0, fragments.length);
-    let s: number = getRandom(0, fragments[fragment].length);
-
-    if (fragments[fragment].length == 0) {
-        return;
+const deleteSymbol = (fragments: string[]): boolean => {
+    if (fragments.filter(x => x.length > 1).length == 0) {
+        return false;
     }
+
+    let fragment: number = getRandom(0, fragments.length);
+    while (fragments[fragment].length < 2) {
+        fragment = getRandom(0, fragments.length);
+    }
+
+    let s: number = getRandom(0, fragments[fragment].length);
 
     if (s == fragments[fragment].length - 1) {
         fragments[fragment] = fragments[fragment].slice(0, s);
-        return;
+        return true;
     }
 
     fragments[fragment] = fragments[fragment].slice(0, s) + fragments[fragment].slice(s + 1);
+    return true;
 }
 
 const deleteFragment = (fragments: string[]): string[] => {
@@ -86,19 +91,22 @@ const repeatFragment = (fragments: string[]): string[] => {
 
     let fragment: number = getRandom(0, fragments.length);
 
-    let iterated = [];
+    let iterated: string[] = [];
     for (let i = 0; i < iterations; i++) {
         iterated.push(fragments[fragment]);
     }
 
-    return fragments.splice(fragment + 1, 0, ...iterated);
+    if (fragment == fragments.length - 1) {
+        return [...fragments, ...iterated];
+    }
+
+    return [...fragments.slice(0, fragment), ...iterated, ...fragments.slice(fragment + 1)]
 }
 
 const mutators: Function[] = [ deleteFragment, swapFragments, repeatSymbol, swapSymbols, deleteSymbol, repeatFragment];
 
 function mutatePaths(fragments: string[]): string[] {
     let mutated: string[] = [...fragments].filter(s => s.length != 0);
-
     if (mutated.length == 0)  {
         return fragments;
     }
@@ -115,10 +123,14 @@ function mutatePaths(fragments: string[]): string[] {
         }
 
         let i: number = getRandom(0, mutators.length);
-        if (mutators[i] === deleteFragment && mutators.length < 2) {
+        if (mutators[i] === deleteFragment && mutated.length < 2) {
             count--;
         } else if (mutators[i] === deleteFragment || mutators[i] === repeatFragment) {
             mutated = mutators[i](mutated);
+        } else if (mutators[i] === deleteSymbol) {
+            if (!deleteSymbol(mutated)) {
+                count--;
+            }
         } else {
             mutators[i](mutated);
         }
