@@ -42,7 +42,6 @@ function fuzzTest(initialRegex: RegExp, transformedRegex: RegExp, paths: string[
             transformed regex result: ${t.transformedResult} in ${t.transformedDuration}ms`)
     }
 
-
     const res = JSON.stringify(tests, null, '\t');
     writeFileSync(config.fuzzingOutput, res);
 }

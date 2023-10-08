@@ -72,23 +72,6 @@ function setNewFinal(automata: Automata) {
     automata.states++;
 }
 
-/*export function convertDFAToRegex(automataToConvert: Automata) {
-    let automata: Automata = structuredClone(automataToConvert);
-
-    let states: number[] = [];
-    for (let i = 0; i < automata.states - 2; i++) {
-        states.push(i)
-    }
-
-    while (states.length > 0) {
-        let state: number = states[getRandom(0, states.length)];
-        eliminateState(automata, state);
-        states = states.filter(x => x != state);
-    }
-
-    return '^' + automata.map[automata.init][automata.final[0]][0] + '$';
-}*/
-
 type transitions = { [label: number]: string }
 
 function isPresent(automata: Automata, state: number): boolean {

@@ -1,6 +1,6 @@
 const config = {
-    regexOutput: 'regex',
-    automataInput: 'automataOutput',
+    regexOutput: 'input',
+    automataInput: 'output',
     fuzzingOutput: 'results',
 }
 
