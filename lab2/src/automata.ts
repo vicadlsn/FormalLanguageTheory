@@ -3,11 +3,11 @@ import {getRandom} from "./random";
 type transitions = string[][][];
 
 export interface Automata {
-    start: number,
+    init: number,
     states: number,
-    finals: number[],
+    final: number[],
     alphabet: string[],
-    transitions: transitions,
+    map: transitions,
     reachability: reachability,
 }
 
@@ -32,14 +32,14 @@ export function buildTransitions(map: { [label: string]: number[] }[], stateNum:
 }
 
 // для удобства reachability[i][j] = j, если j достижима из i
-export type reachability = number[][];
+type reachability = number[][];
 
 export function getReachabilityMatrix(automata: Automata): reachability {
     let reach: boolean[][] = [];
     for (let from = 0; from < automata.states; from++) {
         reach[from] = [];
         for (let to = 0; to < automata.states; to++) {
-            if (automata.transitions[from][to].length != 0) {
+            if (automata.map[from][to].length != 0) {
                 reach[from][to] = true;
             }
         }
@@ -77,16 +77,16 @@ export function getPaths(automata: Automata): string[] {
 }
 
 function getStatesSequence(automata: Automata): number[] {
-    let state: number = automata.start;
-    let path: number[] = [automata.start];
+    let state: number = automata.init;
+    let path: number[] = [automata.init];
 
-    while (automata.finals.indexOf(state) == -1/*path.length < automata.states-1*/) {
+    do {
         let reachable: number[] = automata.reachability[state].filter(x => x != -1);
 
         state = reachable[getRandom(0, reachable.length)];
 
         path.push(state);
-    }
+    } while (automata.final.indexOf(state) == -1/*path.length < automata.states-1*/);
 
     //path.push(final);
 
@@ -115,7 +115,7 @@ function getPath(automata: Automata, from: number, to: number): string {
 }
 
 function getRandomLabel(automata: Automata, from: number, to: number): string {
-    let labels: string[] = automata.transitions[from][to];
+    let labels: string[] = automata.map[from][to];
     return labels[getRandom(0, labels.length)] || '';
 }
 
@@ -129,10 +129,10 @@ function BFS(automata: Automata, start: number, end: number): { [parent: string]
     visited[start] = true;
 
     while (queue.length > 0) {
-        let parent: number = queue.shift();
+        let parent: number = Number(queue.shift());
 
         for (let child: number = 0; child < automata.states; child++) {
-            if (automata.transitions[parent][child].length == 0) continue;
+            if (automata.map[parent][child].length == 0) continue;
 
             if (child == end) {
                 parents[child] = parent;
@@ -151,4 +151,6 @@ function BFS(automata: Automata, start: number, end: number): { [parent: string]
             }
         }
     }
+
+    return parents;
 }

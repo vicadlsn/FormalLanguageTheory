@@ -14,7 +14,6 @@ type Options = {
     followedByConcatenation: boolean,
 }
 
-
 export class RegexGenerator {
     private readonly alphabet = ['a', 'b', 'c', 'd', 'e'];
 
@@ -24,16 +23,20 @@ export class RegexGenerator {
     private maxSequenceNesting: number = 1;
 
     constructor(
-        private readonly alphabetSize: number,
-        private readonly maxStarHeight: number,
-        private readonly maxLookaheadsNumber: number,
-        private readonly maxLettersNumber: number,
+        private readonly alphabetSize: number = 5,
+        private readonly maxStarHeight: number = 2,
+        private readonly maxLookaheadsNumber: number = 2,
+        private readonly maxLettersNumber: number = 10,
     ) {
         if (alphabetSize > this.alphabet.length) this.alphabetSize = this.alphabet.length;
         if (alphabetSize < 0) this.alphabetSize = 0;
         if (maxStarHeight < 0) this.maxStarHeight = 0;
         if (maxLookaheadsNumber < 0) this.maxLookaheadsNumber = 0;
         if (maxLettersNumber < 0) this.maxLettersNumber = 0;
+
+        this.lookaheadsLeft = this.maxLookaheadsNumber;
+        this.lettersUsed = 0;
+        this.currentSequenceNesting = 0;
     }
 
 
