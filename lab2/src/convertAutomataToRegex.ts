@@ -1,10 +1,79 @@
-import {Automata} from './automata'
+import {label, Automata} from './automata'
 import {getRandom} from "./random";
 
 export function convertDFAToRegex(automataToConvert: Automata) {
     let automata: Automata = structuredClone(automataToConvert);
+    let prevStart: number = automata.init;
+    let startIsFinal: boolean = automata.final.indexOf(automata.init) != -1;
+
+    //let finals: number[] = [...automata.final];
+
     setNewStart(automata);
     setNewFinal(automata);
+
+    let res: string = ''
+
+    if (startIsFinal) {
+        res += '|'
+        let loop = automata.map[prevStart][prevStart];
+        if ( loop != label.empty) {
+            res += loop + '|';
+        }
+    }
+
+    let states: number[] = [];
+    for (let i = 0; i < automata.states - 2; i++) {
+        states.push(i);
+    }
+
+    while (states.length > 0) {
+        eliminateState(automata, Number(states.pop()));
+    }
+
+    return '^' + res + automata.map[automata.init][automata.final[0]] + '$';
+}
+
+function setNewStart(automata: Automata) {
+    for (let i = 0; i < automata.states; i++) {
+        automata.map[i].push(label.empty);
+    }
+
+    let start: string[] = [];
+    for (let i = 0; i < automata.states + 1; i++) {
+        start[i] = label.empty;
+    }
+
+    if (automata.final.indexOf(automata.init) != -1) {
+
+    }
+
+    automata.map.push(start);
+    automata.map[automata.states][automata.init] = label.epsilon;
+    automata.init = automata.states;
+    automata.states++;
+}
+
+function setNewFinal(automata: Automata) {
+    for (let i = 0; i < automata.states; i++) {
+        automata.map[i].push(label.empty);
+    }
+
+    let final: string[] = [];
+    for (let i = 0; i < automata.states + 1; i++) {
+        final[i] = label.empty;
+    }
+
+    for (let i = 0; i < automata.final.length; i++) {
+        automata.map[automata.final[i]][automata.states] = label.epsilon;
+    }
+
+    automata.map.push(final);
+    automata.final = [automata.states];
+    automata.states++;
+}
+
+/*export function convertDFAToRegex(automataToConvert: Automata) {
+    let automata: Automata = structuredClone(automataToConvert);
 
     let states: number[] = [];
     for (let i = 0; i < automata.states - 2; i++) {
@@ -18,51 +87,20 @@ export function convertDFAToRegex(automataToConvert: Automata) {
     }
 
     return '^' + automata.map[automata.init][automata.final[0]][0] + '$';
-}
-
-function setNewStart(automata: Automata) {
-    for (let i = 0; i < automata.states; i++) {
-        automata.map[i].push([]);
-    }
-
-    let start: string[][] = [];
-    for (let i = 0; i < automata.states + 1; i++) {
-        start[i] = Array<string>();
-    }
-
-    automata.map.push(start);
-    automata.map[automata.states][automata.init] = [''];
-    automata.init = automata.states;
-    automata.states++;
-}
-
-function setNewFinal(automata: Automata) {
-    for (let i = 0; i < automata.states; i++) {
-        automata.map[i].push([]);
-    }
-
-    let final: string[][] = [];
-    for (let i = 0; i < automata.states + 1; i++) {
-        final[i] = Array<string>();
-    }
-
-    for (let i = 0; i < automata.final.length; i++) {
-        automata.map[automata.final[i]][automata.states] = [''];
-    }
-
-    automata.map.push(final);
-    automata.final = [automata.states];
-    automata.states++;
-}
+}*/
 
 type transitions = { [label: number]: string }
+
+function isPresent(automata: Automata, state: number): boolean {
+    return automata.map[state].length > 0;
+}
 
 function getPredecessors(automata: Automata, state: number): transitions {
     let tr: transitions = {};
 
     for (let from = 0; from < automata.states; from++) {
-        if (from != state && automata.map[from].length != 0 && automata.map[from][state].length != 0) {
-            tr[from] = automata.map[from][state].join('|');
+        if (from != state && isPresent(automata, from) && automata.map[from][state] != label.empty) {
+            tr[from] = automata.map[from][state];
         }
     }
 
@@ -73,8 +111,8 @@ function getSuccessors(automata: Automata, state: number): transitions {
     let tr: transitions = {};
 
     for (let to = 0; to < automata.states; to++) {
-        if (to != state && automata.map[state].length != 0 && automata.map[state][to].length != 0) {
-            tr[to] = automata.map[state][to].join('|');
+        if (to != state && isPresent(automata, state) && automata.map[state][to] != label.empty) {
+            tr[to] = automata.map[state][to];
         }
     }
 
@@ -82,29 +120,14 @@ function getSuccessors(automata: Automata, state: number): transitions {
 }
 
 function getTransitionsLabel(automata: Automata, from: number, to: number): string {
-    if (automata.map[from][to].length == 0) {
-        return '';
-    }
-
-    let loop: string = getLoopLabel(automata, from, from);
-    if (loop != '') loop = `(${loop})*`
-    let tr: string = automata.map[from][to].join('|');
-    if (tr != '' && loop != '') tr = `(${tr})`
-
-    return loop + tr;
-}
-
-function getLoopLabel(automata: Automata, from: number, to: number): string {
-    if (automata.map[from][to].length == 0) {
-        return '';
-    }
-    return automata.map[from][to].join('|');
+    return automata.map[from][to];
 }
 
 function getEliminationLabel(psLabel: string, pLabel: string, loopLabel: string, sLabel: string): string {
-    if (pLabel != '') pLabel = `(${pLabel})`;
-    if (sLabel != '') sLabel = `(${sLabel})`;
-    if (loopLabel != '') loopLabel = `(${loopLabel})*`
+    pLabel == label.empty ? pLabel = '' : (pLabel == label.epsilon ? pLabel = '' : pLabel = `(${pLabel})`);
+    sLabel == label.empty ? sLabel = '' : (sLabel == label.epsilon ? sLabel = '' : sLabel = `(${sLabel})`);
+    loopLabel == label.empty ? loopLabel = '' : (loopLabel == label.epsilon ? loopLabel = '' : loopLabel = `(${loopLabel})*`);
+    psLabel == label.empty ? psLabel = '' : (psLabel == label.epsilon ? psLabel = '' : psLabel);
 
     if (pLabel == '' && sLabel == '' && loopLabel == '') {
         return psLabel;
@@ -120,21 +143,20 @@ function getEliminationLabel(psLabel: string, pLabel: string, loopLabel: string,
 function eliminateState(automata: Automata, state: number): void {
     let predecessors: transitions = getPredecessors(automata, state),
         successors: transitions = getSuccessors(automata, state),
-        loopLabel: string = getLoopLabel(automata, state, state);
+        loopLabel: string = getTransitionsLabel(automata, state, state);
 
     for (let p in predecessors) {
         for (let s in successors) {
-            automata.map[p][s] = [
-                getEliminationLabel(
-                    getTransitionsLabel(automata, Number(p), Number(s)),
-                    predecessors[p],
-                    loopLabel,
-                    successors[s],
-                ),
-            ];
+            automata.map[p][s] = getEliminationLabel
+            (
+                getTransitionsLabel(automata, Number(p), Number(s)),
+                predecessors[p],
+                loopLabel,
+                successors[s],
+            );
         }
-        automata.map[p][state] = Array<string>();
+        automata.map[p][state] = label.empty;
     }
 
-    automata.map[state] = Array<Array<string>>();
+    automata.map[state] = [];
 }
