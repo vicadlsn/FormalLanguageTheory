@@ -103,7 +103,17 @@ const repeatFragment = (fragments: string[]): string[] => {
     return [...fragments.slice(0, fragment), ...iterated, ...fragments.slice(fragment + 1)]
 }
 
-const mutators: Function[] = [ deleteFragment, swapFragments, repeatSymbol, swapSymbols, deleteSymbol, repeatFragment];
+const reverseFragment = (fragments: string[]): void => {
+    let fragment: number = getRandom(0, fragments.length);
+
+    let arr: string[] = fragments[fragment].split('');
+    arr.reverse();
+
+    fragments[fragment] = arr.join('');
+}
+
+
+const mutators: Function[] = [ deleteFragment, swapFragments, repeatSymbol, swapSymbols, deleteSymbol, repeatFragment, reverseFragment];
 
 function mutatePaths(fragments: string[]): string[] {
     let mutated: string[] = [...fragments].filter(s => s.length != 0);
