@@ -70,7 +70,7 @@ export function removeTraps(automata: Automata): void {
     automata.map.forEach((state, i) => {
         let trap: boolean = true;
         automata.final.forEach(finalState => {
-            if (automata.reachability[i][finalState] != -1) {
+            if (automata.reachability[i][finalState] != -1 || i == finalState) {
                 trap = false;
             }
         })

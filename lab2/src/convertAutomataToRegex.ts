@@ -4,7 +4,7 @@ type adjacencyMatrix = string[][];
 
 function buildAdjacencyMatrix(automata: Automata): adjacencyMatrix {
     let m: adjacencyMatrix = automata.map.map(line => {
-        let l: string[] = line.map(state => state.join('|'));
+        let l: string[] = line.map(state => state.length == 0 ? label.empty : state.join('|'));
         l.push(label.empty);
         l.push(label.empty);
         return l;
