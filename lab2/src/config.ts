@@ -1,7 +1,7 @@
 const config = {
-    regexOutput: 'input',
-    automataInput: 'output',
-    fuzzingOutput: 'results',
+    regexOutput: 'regex.txt',
+    automataInput: 'automata.txt',
+    fuzzingOutput: 'results.txt',
 }
 
 export default config;
