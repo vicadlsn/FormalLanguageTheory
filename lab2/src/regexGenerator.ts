@@ -57,7 +57,6 @@ export class RegexGenerator {
         return this.expandInit()
     }
 
-
     private expandInit(): string {
         if (this.maxLettersNumber == 0) {
             return '^$';
@@ -70,19 +69,10 @@ export class RegexGenerator {
             followedByConcatenation: false
         });
 
-        this.firstIteration = false;
-        while ( this.lettersUsed < this.maxLettersNumber) {
-            res += '|' + this.expandRegex({
-                lettersLeft: this.maxLettersNumber - this.lettersUsed,
-                iterationsLeft: this.maxStarHeight,
-                noLookaheads: false,
-                followedByConcatenation: false
-            });
-        }
+
 
         return res + '$';
     }
-
 
     private expandRegex(options: Options): string {
         let next: Options = {

@@ -3,6 +3,7 @@ import * as automata from "./automata"
 import {convertDFAToRegex} from "./convertAutomataToRegex";
 import {fuzzStringFromFragments} from "./fuzzing";
 import config from "./config"
+import {removeTraps} from "./automata";
 
 try {
     fuzzing();
@@ -15,7 +16,7 @@ function fuzzing(): void {
     let autToRegex = convertDFAToRegex(aut);
     console.log(`converted automata to regex: ${autToRegex}`);
 
-    fuzzTest(new RegExp(readFileSync(config.regexOutput).toString()), new RegExp(autToRegex), automata.getPaths(aut), 5);
+    fuzzTest(new RegExp(readFileSync(config.regexOutput).toString()), new RegExp(autToRegex), automata.getPaths(aut), 50);
 }
 
 function fuzzTest(initialRegex: RegExp, transformedRegex: RegExp, paths: string[], iterations: number) {
@@ -59,7 +60,9 @@ function readAutomata(fn: string): automata.Automata {
         map: automata.buildTransitions(object.map, object.states),
         reachability: [],
     }
+
     aut.reachability = automata.getReachabilityMatrix(aut);
+    removeTraps(aut);
 
     return aut;
 }
