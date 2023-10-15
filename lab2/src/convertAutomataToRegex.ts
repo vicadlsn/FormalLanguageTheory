@@ -1,23 +1,22 @@
 import {label, Automata} from './automata'
-import {getRandom} from "./random";
 
 type adjacencyMatrix = string[][];
 
 function buildAdjacencyMatrix(automata: Automata): adjacencyMatrix {
-    let m: adjacencyMatrix = automata.map.map((line, i) => {
-        let l: string[] = line.map((state, j) => state.join('|'));
+    let m: adjacencyMatrix = automata.map.map(line => {
+        let l: string[] = line.map(state => state.join('|'));
         l.push(label.empty);
         l.push(label.empty);
         return l;
     })
 
-    let startState: string[] = [...Array<string>(automata.states+2)].map((s, i) => {
+    let startState: string[] = [...Array<string>(automata.states+2)].map((_, i) => {
         return (i == automata.init) ? label.epsilon : label.empty;
     })
 
     automata.final.forEach((i) => m[i][automata.states+1] = label.epsilon);
 
-    let finalState: string[] = [...Array<string>(automata.states+2)].map(i => label.empty);
+    let finalState: string[] = [...Array<string>(automata.states+2)].map(_ => label.empty);
 
     m.push(startState);
     m.push(finalState);

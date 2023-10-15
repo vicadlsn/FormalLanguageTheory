@@ -1,0 +1,18 @@
+{
+  "name": "tfl_lab_2",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "genRegex": "node --loader ts-node/esm ./src/startGenerator.ts",
+    "parseRegex": "node --loader ts-node/esm ./valery/index.ts",
+    "testRegex": "node --loader ts-node/esm ./src/testRegex.ts"
+  },
+  "rootDir": "./",
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  },
+  "description": ""
+}
