@@ -1,6 +1,6 @@
 import {getRandom} from "./random";
 
-type transitions = string[][];
+type transitions = string[][][];
 
 export interface Automata {
     init: number,
@@ -21,15 +21,14 @@ export function buildTransitions(map: { [label: string]: number[] }[], stateNum:
     for (let i = 0; i < stateNum; i++) {
         tr[i] = [];
         for (let j = 0; j < stateNum; j++) {
-            tr[i][j] = label.empty;
+            tr[i][j] = [];
         }
     }
-
 
     map.forEach((labels, from) => {
         for (let label in labels) {
             labels[label].forEach(to => {
-                tr[from][to] = label;
+                tr[from][to].push(label);
             })
         }
     });
@@ -44,7 +43,7 @@ export function getReachabilityMatrix(automata: Automata): reachability {
     for (let from = 0; from < automata.states; from++) {
         reach[from] = [];
         for (let to = 0; to < automata.states; to++) {
-            reach[from][to] = automata.map[from][to] != label.empty;
+            reach[from][to] = automata.map[from][to].length != 0;
         }
     }
 
@@ -67,6 +66,24 @@ export function getReachabilityMatrix(automata: Automata): reachability {
     return res;
 }
 
+export function removeTraps(automata: Automata): void {
+    automata.map.forEach((state, i) => {
+        let trap: boolean = true;
+        automata.final.forEach(finalState => {
+            if (automata.reachability[i][finalState] != -1) {
+                trap = false;
+            }
+        })
+
+        if (trap) {
+            automata.map.forEach((s, cur) => {
+                automata.map[cur][i] = [];
+                automata.reachability[cur][i] = -1;
+            })
+        }
+    })
+}
+
 export function getPaths(automata: Automata): string[] {
     let path: number[] = getStatesSequence(automata);
 
@@ -87,6 +104,9 @@ function getStatesSequence(automata: Automata): number[] {
     let iteration: number = 0;
     do {
         let reachable: number[] = automata.reachability[state].filter(x => x != -1);
+        if  (reachable.length == 0) {
+            break;
+        }
 
         state = reachable[getRandom(0, reachable.length)];
 
@@ -101,7 +121,7 @@ function getStatesSequence(automata: Automata): number[] {
 
 function getPath(automata: Automata, from: number, to: number): string {
     if (from == to) {
-        return automata.map[from][to];
+        return automata.map[from][to][getRandom(0, automata.map[from][to].length)];
     }
 
     let parents: { [parent: string]: number } = BFS(automata, from, to),
@@ -110,17 +130,16 @@ function getPath(automata: Automata, from: number, to: number): string {
         parent: number = parents[child];
 
     while (parent != from) {
-        res = automata.map[parent][child] + res;
+        res = automata.map[parent][child][getRandom(0, automata.map[parent][child].length)] + res;
         child = parent;
         parent = parents[child];
     }
 
-    res = automata.map[from][child] + res;
+    res = automata.map[from][child][getRandom(0, automata.map[from][child].length)] + res;
 
     return res;
 }
 
-// пока что просто поиск кратчайшего пути
 function BFS(automata: Automata, start: number, end: number): { [parent: string]: number } {
     let visited: boolean[] = [];
     let parents: { [parent: string]: number } = {};
@@ -133,7 +152,7 @@ function BFS(automata: Automata, start: number, end: number): { [parent: string]
         let parent: number = Number(queue.shift());
 
         for (let child: number = 0; child < automata.states; child++) {
-            if (automata.map[parent][child] == label.empty) continue;
+            if (automata.map[parent][child].length == 0) continue;
 
             if (child == end) {
                 parents[child] = parent;

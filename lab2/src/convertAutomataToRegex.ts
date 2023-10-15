@@ -1,109 +1,87 @@
 import {label, Automata} from './automata'
 import {getRandom} from "./random";
 
-export function convertDFAToRegex(automataToConvert: Automata) {
-    let automata: Automata = structuredClone(automataToConvert);
+type adjacencyMatrix = string[][];
+
+function buildAdjacencyMatrix(automata: Automata): adjacencyMatrix {
+    let m: adjacencyMatrix = automata.map.map((line, i) => {
+        let l: string[] = line.map((state, j) => state.join('|'));
+        l.push(label.empty);
+        l.push(label.empty);
+        return l;
+    })
+
+    let startState: string[] = [...Array<string>(automata.states+2)].map((s, i) => {
+        return (i == automata.init) ? label.epsilon : label.empty;
+    })
+
+    automata.final.forEach((i) => m[i][automata.states+1] = label.epsilon);
+
+    let finalState: string[] = [...Array<string>(automata.states+2)].map(i => label.empty);
+
+    m.push(startState);
+    m.push(finalState);
+
+    return m;
+}
+
+export function convertDFAToRegex(automata: Automata) {
+    if (automata.final.length == 0) {
+        return '';
+    }
+
+    let transitions: adjacencyMatrix = buildAdjacencyMatrix(automata);
     let prevStart: number = automata.init;
     let startIsFinal: boolean = automata.final.indexOf(automata.init) != -1;
 
-    //let finals: number[] = [...automata.final];
-
-    setNewStart(automata);
-    setNewFinal(automata);
-
     let res: string = ''
-
     if (startIsFinal) {
         res += '|'
-        let loop = automata.map[prevStart][prevStart];
+        let loop = transitions[prevStart][prevStart];
         if ( loop != label.empty) {
             res += loop + '|';
         }
     }
 
-    let states: number[] = [];
-    for (let i = 0; i < automata.states - 2; i++) {
-        states.push(i);
-    }
-
-    while (states.length > 0) {
-        eliminateState(automata, Number(states.pop()));
-    }
-
-    return '^' + res + automata.map[automata.init][automata.final[0]] + '$';
-}
-
-function setNewStart(automata: Automata) {
     for (let i = 0; i < automata.states; i++) {
-        automata.map[i].push(label.empty);
+        eliminateState(transitions, i);
     }
 
-    let start: string[] = [];
-    for (let i = 0; i < automata.states + 1; i++) {
-        start[i] = label.empty;
-    }
-
-    if (automata.final.indexOf(automata.init) != -1) {
-
-    }
-
-    automata.map.push(start);
-    automata.map[automata.states][automata.init] = label.epsilon;
-    automata.init = automata.states;
-    automata.states++;
+    return '^' + res + transitions[automata.states][automata.states+1] + '$';
 }
 
-function setNewFinal(automata: Automata) {
-    for (let i = 0; i < automata.states; i++) {
-        automata.map[i].push(label.empty);
-    }
+type transitionFromOrTo = { [label: number]: string }
 
-    let final: string[] = [];
-    for (let i = 0; i < automata.states + 1; i++) {
-        final[i] = label.empty;
-    }
-
-    for (let i = 0; i < automata.final.length; i++) {
-        automata.map[automata.final[i]][automata.states] = label.epsilon;
-    }
-
-    automata.map.push(final);
-    automata.final = [automata.states];
-    automata.states++;
+function isPresent(transitions: adjacencyMatrix, state: number): boolean {
+    return transitions[state].length > 0;
 }
 
-type transitions = { [label: number]: string }
+function getPredecessors(transitions: adjacencyMatrix, state: number): transitionFromOrTo {
+    let tr: transitionFromOrTo = {};
 
-function isPresent(automata: Automata, state: number): boolean {
-    return automata.map[state].length > 0;
-}
-
-function getPredecessors(automata: Automata, state: number): transitions {
-    let tr: transitions = {};
-
-    for (let from = 0; from < automata.states; from++) {
-        if (from != state && isPresent(automata, from) && automata.map[from][state] != label.empty) {
-            tr[from] = automata.map[from][state];
+    for (let from = 0; from < transitions.length; from++) {
+        if (from != state && isPresent(transitions, from) && transitions[from][state] != label.empty) {
+            tr[from] = transitions[from][state];
         }
     }
 
     return tr;
 }
 
-function getSuccessors(automata: Automata, state: number): transitions {
-    let tr: transitions = {};
+function getSuccessors(transitions: adjacencyMatrix, state: number): transitionFromOrTo {
+    let tr: transitionFromOrTo = {};
 
-    for (let to = 0; to < automata.states; to++) {
-        if (to != state && isPresent(automata, state) && automata.map[state][to] != label.empty) {
-            tr[to] = automata.map[state][to];
+    for (let to = 0; to < transitions.length; to++) {
+        if (to != state && isPresent(transitions, state) && transitions[state][to] != label.empty) {
+            tr[to] = transitions[state][to];
         }
     }
 
     return tr;
 }
 
-function getTransitionsLabel(automata: Automata, from: number, to: number): string {
-    return automata.map[from][to];
+function getTransitionsLabel(transitions: adjacencyMatrix, from: number, to: number): string {
+    return transitions[from][to];
 }
 
 function getEliminationLabel(psLabel: string, pLabel: string, loopLabel: string, sLabel: string): string {
@@ -123,23 +101,23 @@ function getEliminationLabel(psLabel: string, pLabel: string, loopLabel: string,
     return psLabel + '|' + pLabel + loopLabel + sLabel;
 }
 
-function eliminateState(automata: Automata, state: number): void {
-    let predecessors: transitions = getPredecessors(automata, state),
-        successors: transitions = getSuccessors(automata, state),
-        loopLabel: string = getTransitionsLabel(automata, state, state);
+function eliminateState(transitions: adjacencyMatrix, state: number): void {
+    let predecessors: transitionFromOrTo = getPredecessors(transitions, state),
+        successors: transitionFromOrTo = getSuccessors(transitions, state),
+        loopLabel: string = getTransitionsLabel(transitions, state, state);
 
     for (let p in predecessors) {
         for (let s in successors) {
-            automata.map[p][s] = getEliminationLabel
+            transitions[p][s] = getEliminationLabel
             (
-                getTransitionsLabel(automata, Number(p), Number(s)),
+                getTransitionsLabel(transitions, Number(p), Number(s)),
                 predecessors[p],
                 loopLabel,
                 successors[s],
             );
         }
-        automata.map[p][state] = label.empty;
+        transitions[p][state] = label.empty;
     }
 
-    automata.map[state] = [];
+    transitions[state] = [];
 }
