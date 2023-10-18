@@ -111,7 +111,6 @@ function getStatesSequence(automata: Automata): number[] {
         state = reachable[getRandom(0, reachable.length)];
 
         path.push(state);
-
         iteration++
     } while (iteration < minSequenceLength || (iteration > minSequenceLength && automata.final.indexOf(state) == -1));
     //while (automata.final.indexOf(state) == -1);
@@ -121,7 +120,7 @@ function getStatesSequence(automata: Automata): number[] {
 
 function getPath(automata: Automata, from: number, to: number): string {
     if (from == to) {
-        return automata.map[from][to][getRandom(0, automata.map[from][to].length)];
+        return automata.map[from][to][getRandom(0, automata.map[from][to].length)] || '';
     }
 
     let parents: { [parent: string]: number } = BFS(automata, from, to),
