@@ -46,7 +46,7 @@ export function convertDFAToRegex(automata: Automata) {
         eliminateState(transitions, i);
     }
 
-    return '^' + res + transitions[automata.states][automata.states+1] + '$';
+    return '^(' + res + transitions[automata.states][automata.states+1] + ')$';
 }
 
 type transitionFromOrTo = { [label: number]: string }

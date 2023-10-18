@@ -62,16 +62,14 @@ export class RegexGenerator {
             return '^$';
         }
 
-        let res: string = '^' + this.expandRegex({
+        let res: string = '^(' + this.expandRegex({
             lettersLeft: this.maxLettersNumber,
             iterationsLeft: this.maxStarHeight,
             noLookaheads: false,
             followedByConcatenation: false
         });
 
-
-
-        return res + '$';
+        return res + ')$';
     }
 
     private expandRegex(options: Options): string {
