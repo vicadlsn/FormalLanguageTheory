@@ -2,7 +2,7 @@
 // <regex> ::= <concatenation> '|' <regex> | <concatenation>
 // <concatenation> ::= <iteration><concatenation> | <iteration>
 // <iteration> ::= <group> '*' | <group> | '(?=' <lookahead> ')'
-// <group> ::=  <regex> | <symbol>
+// <group> ::=  (<regex>) | <symbol>
 // <lookahead> ::= <regex> | <regex> '$'
 
 import {getRandom} from "./random";

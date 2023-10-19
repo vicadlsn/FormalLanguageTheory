@@ -34,6 +34,10 @@ export function convertDFAToRegex(automata: Automata) {
         eliminateState(transitions, i);
     }
 
+    if (transitions[automata.states][automata.states + 1] == label.empty) {
+        return '^$';
+    }
+
     return '^(' + transitions[automata.states][automata.states + 1] + ')$';
 }
 

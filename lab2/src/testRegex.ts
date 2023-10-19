@@ -25,6 +25,11 @@ function fuzzTest(initialRegex: RegExp, transformedRegex: RegExp, paths: string[
     let initial = paths.join('');
     console.log(`String to match: ${initial}`)
 
+    if (paths.length == 0) {
+        console.log('Nothing to test.');
+        return;
+    }
+
     type test = { string: string, mutated: string, initResult?: boolean, transformedResult?: boolean, initDuration?: number, transformedDuration?: number };
     let tests: test[] = []
     for (let i = 0; i < iterations; i++) {
