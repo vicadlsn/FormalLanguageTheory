@@ -1,15 +1,16 @@
-import {readFileSync, writeFileSync} from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import * as automata from "./automata"
-import {convertDFAToRegex} from "./convertAutomataToRegex";
-import {fuzzStringFromFragments} from "./fuzzing";
+import { convertDFAToRegex } from "./convertAutomataToRegex";
+import { fuzzStringFromFragments } from "./fuzzing";
 import config from "./config"
-import {removeTraps} from "./automata";
+import { removeTraps } from "./automata";
 
 try {
     fuzzing();
 } catch (e) {
     console.error(e)
 }
+
 function fuzzing(): void {
     let aut: automata.Automata = readAutomata(config.automataInput);
 
@@ -21,24 +22,25 @@ function fuzzing(): void {
 
 function fuzzTest(initialRegex: RegExp, transformedRegex: RegExp, paths: string[], iterations: number) {
     let start: number;
+    let initial = paths.join('');
+    console.log(`String to match: ${initial}`)
 
-    type test = {test: string, initResult?: boolean, transformedResult?: boolean, initDuration?: number, transformedDuration?: number};
+    type test = { string: string, mutated: string, initResult?: boolean, transformedResult?: boolean, initDuration?: number, transformedDuration?: number };
     let tests: test[] = []
-
     for (let i = 0; i < iterations; i++) {
-        let t: test = {test: fuzzStringFromFragments(paths)};
+        let t: test = { string: initial, mutated: fuzzStringFromFragments(paths) };
 
-        start= performance.now();
-        t.initResult = initialRegex.test(t.test);
+        start = performance.now();
+        t.initResult = initialRegex.test(t.mutated);
         t.initDuration = performance.now() - start;
 
         start = performance.now();
-        t.transformedResult = transformedRegex.test(t.test);
+        t.transformedResult = transformedRegex.test(t.mutated);
         t.transformedDuration = performance.now() - start;
 
         tests.push(t);
 
-        console.log(`Test: ${t.test} 
+        console.log(`Mutated: ${t.mutated} 
             initial regex result: ${t.initResult} in ${t.initDuration}ms;
             transformed regex result: ${t.transformedResult} in ${t.transformedDuration}ms`)
     }
@@ -47,7 +49,7 @@ function fuzzTest(initialRegex: RegExp, transformedRegex: RegExp, paths: string[
     writeFileSync(config.fuzzingOutput, res);
 }
 
-interface inputAutomata {init: number, final: number[], alphabet: string[], states: number, map: {[label: string]: []}[]}
+interface inputAutomata { init: number, final: number[], alphabet: string[], states: number, map: { [label: string]: [] }[] }
 function readAutomata(fn: string): automata.Automata {
     const jsonStr = readFileSync(fn, 'utf-8');
     const object: inputAutomata = JSON.parse(jsonStr);
@@ -63,6 +65,5 @@ function readAutomata(fn: string): automata.Automata {
 
     aut.reachability = automata.getReachabilityMatrix(aut);
     removeTraps(aut);
-
     return aut;
 }
