@@ -1,8 +1,8 @@
-// <init> ::= '^' <regex> '$' | '^$'
+// <init> ::= '^' (<regex>) '$' | '^$'
 // <regex> ::= <concatenation> '|' <regex> | <concatenation>
 // <concatenation> ::= <iteration><concatenation> | <iteration>
 // <iteration> ::= <group> '*' | <group> | '(?=' <lookahead> ')'
-// <group> ::= '(' <regex> ')' | <symbol>
+// <group> ::=  <regex> | <symbol>
 // <lookahead> ::= <regex> | <regex> '$'
 
 import {getRandom} from "./random";
@@ -62,14 +62,14 @@ export class RegexGenerator {
             return '^$';
         }
 
-        let res: string = '^(' + this.expandRegex({
+        let res: string = '^' + this.expandRegex({
             lettersLeft: this.maxLettersNumber,
             iterationsLeft: this.maxStarHeight,
             noLookaheads: false,
             followedByConcatenation: false
         });
 
-        return res + ')$';
+        return res + '$';
     }
 
     private expandRegex(options: Options): string {
@@ -81,7 +81,7 @@ export class RegexGenerator {
         }
 
         if (options.lettersLeft < 2 || getRandom(0, 2)) {
-            return this.expandConcatenation(next);
+            return '(' + this.expandConcatenation(next) + ')';
         }
 
         this.firstIteration = false;
@@ -95,7 +95,7 @@ export class RegexGenerator {
         next.lettersLeft = options.lettersLeft - this.lettersUsed;
         let right: string = this.expandConcatenation(next);
 
-        return left + '|' + right;
+        return '(' + left + '|' + right + ')';
     }
 
     private expandConcatenation(options: Options): string {
@@ -177,12 +177,12 @@ export class RegexGenerator {
 
         this.currentSequenceNesting++;
 
-        return '(' + this.expandRegex({
+        return this.expandRegex({
             lettersLeft: options.lettersLeft,
             iterationsLeft: options.iterationsLeft,
             noLookaheads: options.noLookaheads,
             followedByConcatenation: options.followedByConcatenation,
-        }) + ')';
+        });
     }
 
     private symbol(): string {
