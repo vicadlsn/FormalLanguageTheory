@@ -35,10 +35,10 @@ class Stack:
         if not node.prev:
             print(node.symbol)
         else:
-            print(f'{indent}+- {node.symbol}')
+            print(f'{indent}*- {node.symbol}')
 
         if last:
-            indent += "  "
+            indent += "   "
         else:
             indent += "|  "
 
