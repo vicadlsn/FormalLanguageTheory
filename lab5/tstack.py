@@ -1,5 +1,7 @@
+import copy
+
 class Stack:
-    def __init__(self, i_symbol="", i_state=0, pos=0):
+    def __init__(self, i_symbol="S`", i_state=0, pos=0):
         s0 = StackItem(i_symbol, i_state, None, 0)
         self.root = s0
         self.top = [s0]
@@ -15,21 +17,33 @@ class Stack:
     def shift(self, parent, symbol, state):
         self.top.append(parent.add_child(symbol, state, parent.input_pos+1))
 
-    def reduce(self, parent, transitions, lhs, num):
-        pos = parent.input_pos
-
+    def reduce(self, top, transitions, lhs, num):
+        if top in top.prev.children:
+            top.prev.children.remove(top)
+        
+        prev = top
         for _ in range(num):
-            parent = parent.prev
+            prev = prev.prev
+        next = prev.add_child(lhs, transitions[prev.state][lhs][0][1], top.input_pos)
 
-        # transitions[state][lhs]=[(SHIFT, dest)]
-        next = parent.add_child(lhs, transitions[parent.state][lhs][0][1], pos)
         self.top.append(next)
 
-    def print_tree(self, node, depth):
-        print("  "*depth+node.symbol)
+    def print(self):
+        self.print_tree(self.root, "", 1)
 
-        for child in node.children:
-            self.print_tree(child, depth+1)
+    def print_tree(self, node, indent, last):
+        if not node.prev:
+            print(node.symbol)
+        else:
+            print(f'{indent}+- {node.symbol}')
+
+        if last:
+            indent += "  "
+        else:
+            indent += "|  "
+
+        for i, child in enumerate(node.children):
+            self.print_tree(child, indent, i== len(node.children)-1)
 
         
 class StackItem:

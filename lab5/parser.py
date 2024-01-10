@@ -97,20 +97,19 @@ class Parser:
                     to_process.append(next.get_symbol_after_dot())
 
     def parse(self, str, n):
-        stack = tstack.Stack("", 0, 0)
+        stack = tstack.Stack()
         step = 0
         str += "$"
 
         while True:
             current_top = stack.pop_top_items()
-
             for cur_state in current_top:
                 pos = cur_state.input_pos
                 symbol = str[pos]
                 
                 if symbol not in self.grammar.symbols and symbol != "$":
                     print(f'ERROR: Unexpected symbol at pos {pos}')
-                    stack.print(stack.root, 0)
+                    stack.print()
                     return False
 
                 if not symbol in self.transitions[cur_state.state]:
@@ -130,9 +129,9 @@ class Parser:
                         stack.reduce(cur_state, self.transitions, action[1], len(action[2]))
 
             step += 1
-    
+
             if step == n:
-                stack.print_tree(stack.root, 0)
+                stack.print()
             
             if stack.top_is_empty():
                 print(f'ERROR: can\'t proceed further; wrong symbol at pos')
